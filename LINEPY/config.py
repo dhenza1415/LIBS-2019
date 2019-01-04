@@ -27,14 +27,14 @@ class Config(object):
         'LINE_SERVICES': '1459630796'
     }
 
-    APP_TYPE    = ApplicationType._VALUES_TO_NAMES[368]
-    APP_VER     = '2.1.5'
+    #APP_TYPE    = ApplicationType._VALUES_TO_NAMES[368]
+    #APP_VER     = '7.14.0'
     CARRIER     = '51089, 1-0'
-    SYSTEM_NAME = 'SILENT'
-    SYSTEM_VER  = '11.2.5'
+    SYSTEM_NAME = 'rendi'
+    #SYSTEM_VER  = '10.12.0'
     IP_ADDR     = '8.8.8.8'
     EMAIL_REGEX = re.compile(r"[^@]+@[^@]+\.[^@]+")
 
     def __init__(self):
-        self.APP_NAME = '%s\t%s\t%s\t%s' % (self.APP_TYPE, self.APP_VER, self.SYSTEM_NAME, self.SYSTEM_VER)
-        self.USER_AGENT = 'Line/%s' % self.APP_VER
+        self.APP_NAME = 'CHROMEOS	1.4.17	Chrome_OS	1'#'CHROMEOS\t2.1.5\tChrome_OS\t1' #% (self.APP_TYPE, self.APP_VER, self.SYSTEM_NAME, self.SYSTEM_VER)
+        self.USER_AGENT = 'Line 1.4.17' #% self.APP_VER
