@@ -1,4 +1,6 @@
-#python 3
+# INI NYAMBUNG KE FROZEN
+# ACIL. MOD
+
 import sys
 class TType(object):
     STOP = 0
@@ -18,7 +20,6 @@ class TType(object):
     LIST = 15
     UTF8 = 16
     UTF16 = 17
-
     _VALUES_TO_NAMES = (
         'STOP',
         'VOID',
@@ -39,42 +40,30 @@ class TType(object):
         'UTF8',
         'UTF16',
     )
-
-
 class TMessageType(object):
     CALL = 1
     REPLY = 2
     EXCEPTION = 3
     ONEWAY = 4
+class PrankbotProses(object):
+    """ini prosesor nya"""
 
-
-class TProcessor(object):
-    """Base class for procsessor, which works on two streams."""
-
-    def process(iprot, oprot):
+    def process(self, iprot, oprot):
         pass
-
-
 class TException(Exception):
-    """Base class for all thrift exceptions."""
-
-    # BaseException.message is deprecated in Python v[2.6,3.0)
+    """ini Exception sob"""
+    # INI SUPORT DI PYTHON2 ATAU PYTHON3
     if (2, 6, 0) <= sys.version_info < (3, 0):
         def _get_message(self):
             return self._message
-
         def _set_message(self, message):
             self._message = message
         message = property(_get_message, _set_message)
-
     def __init__(self, message=None):
         Exception.__init__(self, message)
         self.message = message
-
-
 class TApplicationException(TException):
-    """Application level thrift exceptions."""
-
+    """INI LEVEL THRIFT NYA SOB"""
     UNKNOWN = 0
     UNKNOWN_METHOD = 1
     INVALID_MESSAGE_TYPE = 2
@@ -86,37 +75,35 @@ class TApplicationException(TException):
     INVALID_TRANSFORM = 8
     INVALID_PROTOCOL = 9
     UNSUPPORTED_CLIENT_TYPE = 10
-
     def __init__(self, type=UNKNOWN, message=None):
         TException.__init__(self, message)
         self.type = type
-
     def __str__(self):
         if self.message:
             return self.message
         elif self.type == self.UNKNOWN_METHOD:
-            return 'Unknown method'
+            return 'TIDAK ADA METODE [0]'
         elif self.type == self.INVALID_MESSAGE_TYPE:
-            return 'Invalid message type'
+            return 'TIDAK ADA PESAN [0]'
         elif self.type == self.WRONG_METHOD_NAME:
-            return 'Wrong method name'
+            return 'NAMA TIDAK VALID'
         elif self.type == self.BAD_SEQUENCE_ID:
-            return 'Bad sequence ID'
+            return 'SQUENCE TIDAK SUPORT'
         elif self.type == self.MISSING_RESULT:
-            return 'Missing result'
+            return 'RESPON DI TAMPILKAN'
         elif self.type == self.INTERNAL_ERROR:
-            return 'Internal error'
+            return 'RUANG EROR'
         elif self.type == self.PROTOCOL_ERROR:
-            return 'Protocol error'
+            return 'PROTOCOL EROR'
         elif self.type == self.INVALID_TRANSFORM:
-            return 'Invalid transform'
+            return 'TRANSFORM'
         elif self.type == self.INVALID_PROTOCOL:
-            return 'Invalid protocol'
+            return 'INVALID PRO'
         elif self.type == self.UNSUPPORTED_CLIENT_TYPE:
-            return 'Unsupported client type'
+            return 'CLIENT TIDAK SUPORT INI'
         else:
-            return 'Default (unknown) TApplicationException'
-
+            return 'JANGAN SOMBONG DENGAN APA YANG KAU BISA. SEMUA MILIK ALLAH SWT'
+    # MEMBACA LIBS
     def read(self, iprot):
         iprot.readStructBegin()
         while True:
@@ -137,7 +124,6 @@ class TApplicationException(TException):
                 iprot.skip(ftype)
             iprot.readFieldEnd()
         iprot.readStructEnd()
-
     def write(self, oprot):
         oprot.writeStructBegin('TApplicationException')
         if self.message is not None:
@@ -150,23 +136,16 @@ class TApplicationException(TException):
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
-
-
 class TFrozenDict(dict):
-    """A dictionary that is "frozen" like a frozenset"""
-
+    """PROZENDICT"""
     def __init__(self, *args, **kwargs):
         super(TFrozenDict, self).__init__(*args, **kwargs)
-        # Sort the items so they will be in a consistent order.
-        # XOR in the hash of the class so we don't collide with
-        # the hash of a list of tuples.
+        # INI UNTUK MENGETAHUI DIMANA SC LU EROR DAN UNTUK MENSTOP RUN BOT LU
         self.__hashval = hash(TFrozenDict) ^ hash(tuple(sorted(self.items())))
-
     def __setitem__(self, *args):
-        raise TypeError("Can't modify frozen TFreezableDict")
-
+        raise TypeError("MODIF BY PRANKBOT")
     def __delitem__(self, *args):
-        raise TypeError("Can't modify frozen TFreezableDict")
-
+        raise TypeError("MODIF BY PRANKBOT")
     def __hash__(self):
         return self.__hashval
+# SEKIAN DAN TRIMAKASIH.

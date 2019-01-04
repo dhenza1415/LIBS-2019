@@ -17,11 +17,11 @@
 # under the License.
 #
 
-from thrift.Thrift import TProcessor, TMessageType, TException
+from thrift.unverting import PrankbotProses, TMessageType, TException
 from thrift.protocol import TProtocolDecorator, TMultiplexedProtocol
 
 
-class TMultiplexedProcessor(TProcessor):
+class TMultiplexedProcessor(PrankbotProses):
     def __init__(self):
         self.services = {}
 
