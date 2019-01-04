@@ -1,29 +1,10 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements. See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership. The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License. You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
-#
-
+#LICENCE :   http://www.apache.org/licenses/LICENSE-2.0
+#CREATOR BY : PRANKBOT
+#MOD BY ACIL
 from .TProtocol import TType, TProtocolBase, TProtocolException, checkIntegerLimits
 from struct import pack, unpack
-
 from ..compat import binary_to_str, str_to_binary
-
 __all__ = ['TCompactProtocol', 'TCompactProtocolFactory']
-
 CLEAR = 0
 FIELD_WRITE = 1
 VALUE_WRITE = 2
@@ -33,8 +14,6 @@ FIELD_READ = 5
 CONTAINER_READ = 6
 VALUE_READ = 7
 BOOL_READ = 8
-
-
 def make_helper(v_from, container):
     def helper(func):
         def nested(self, *args, **kwargs):
@@ -42,21 +21,13 @@ def make_helper(v_from, container):
             return func(self, *args, **kwargs)
         return nested
     return helper
-
-
 writer = make_helper(VALUE_WRITE, CONTAINER_WRITE)
 reader = make_helper(VALUE_READ, CONTAINER_READ)
-
-
 def makeZigZag(n, bits):
     checkIntegerLimits(n, bits)
     return (n << 1) ^ (n >> (bits - 1))
-
-
 def fromZigZag(n):
     return (n >> 1) ^ -(n & 1)
-
-
 def writeVarint(trans, n):
     out = bytearray()
     while True:
@@ -67,8 +38,6 @@ def writeVarint(trans, n):
             out.append((n & 0xff) | 0x80)
             n = n >> 7
     trans.write(bytes(out))
-
-
 def readVarint(trans):
     result = 0
     shift = 0
@@ -79,8 +48,6 @@ def readVarint(trans):
         if byte >> 7 == 0:
             return result
         shift += 7
-
-
 class CompactType(object):
     STOP = 0x00
     TRUE = 0x01
@@ -95,8 +62,6 @@ class CompactType(object):
     SET = 0x0A
     MAP = 0x0B
     STRUCT = 0x0C
-
-
 CTYPES = {
     TType.STOP: CompactType.STOP,
     TType.BOOL: CompactType.TRUE,  # used for collection
@@ -111,25 +76,19 @@ CTYPES = {
     TType.SET: CompactType.SET,
     TType.MAP: CompactType.MAP,
 }
-
 TTYPES = {}
 for k, v in CTYPES.items():
     TTYPES[v] = k
 TTYPES[CompactType.FALSE] = TType.BOOL
 del k
 del v
-
-
 class TCompactProtocol(TProtocolBase):
-    """Compact implementation of the Thrift protocol driver."""
-
     PROTOCOL_ID = 0x82
     VERSION = 1
     VERSION_MASK = 0x1f
     TYPE_MASK = 0xe0
     TYPE_BITS = 0x07
     TYPE_SHIFT_AMOUNT = 5
-
     def __init__(self, trans,
                  string_length_limit=None,
                  container_length_limit=None):
@@ -142,16 +101,12 @@ class TCompactProtocol(TProtocolBase):
         self.__containers = []
         self.string_length_limit = string_length_limit
         self.container_length_limit = container_length_limit
-
     def _check_string_length(self, length):
         self._check_length(self.string_length_limit, length)
-
     def _check_container_length(self, length):
         self._check_length(self.container_length_limit, length)
-
     def __writeVarint(self, n):
         writeVarint(self.trans, n)
-
     def writeMessageBegin(self, name, type, seqid):
         assert self.state == CLEAR
         self.__writeUByte(self.PROTOCOL_ID)
@@ -159,24 +114,19 @@ class TCompactProtocol(TProtocolBase):
         self.__writeVarint(seqid)
         self.__writeBinary(str_to_binary(name))
         self.state = VALUE_WRITE
-
     def writeMessageEnd(self):
         assert self.state == VALUE_WRITE
         self.state = CLEAR
-
     def writeStructBegin(self, name):
         assert self.state in (CLEAR, CONTAINER_WRITE, VALUE_WRITE), self.state
         self.__structs.append((self.state, self.__last_fid))
         self.state = FIELD_WRITE
         self.__last_fid = 0
-
     def writeStructEnd(self):
         assert self.state == FIELD_WRITE
         self.state, self.__last_fid = self.__structs.pop()
-
     def writeFieldStop(self):
         self.__writeByte(0)
-
     def __writeFieldHeader(self, type, fid):
         delta = fid - self.__last_fid
         if 0 < delta <= 15:
@@ -185,7 +135,6 @@ class TCompactProtocol(TProtocolBase):
             self.__writeByte(type)
             self.__writeI16(fid)
         self.__last_fid = fid
-
     def writeFieldBegin(self, name, type, fid):
         assert self.state == FIELD_WRITE, self.state
         if type == TType.BOOL:
@@ -194,23 +143,18 @@ class TCompactProtocol(TProtocolBase):
         else:
             self.state = VALUE_WRITE
             self.__writeFieldHeader(CTYPES[type], fid)
-
     def writeFieldEnd(self):
         assert self.state in (VALUE_WRITE, BOOL_WRITE), self.state
         self.state = FIELD_WRITE
-
     def __writeUByte(self, byte):
         self.trans.write(pack('!B', byte))
 
     def __writeByte(self, byte):
         self.trans.write(pack('!b', byte))
-
     def __writeI16(self, i16):
         self.__writeVarint(makeZigZag(i16, 16))
-
     def __writeSize(self, i32):
         self.__writeVarint(i32)
-
     def writeCollectionBegin(self, etype, size):
         assert self.state in (VALUE_WRITE, CONTAINER_WRITE), self.state
         if size <= 14:
@@ -222,7 +166,6 @@ class TCompactProtocol(TProtocolBase):
         self.state = CONTAINER_WRITE
     writeSetBegin = writeCollectionBegin
     writeListBegin = writeCollectionBegin
-
     def writeMapBegin(self, ktype, vtype, size):
         assert self.state in (VALUE_WRITE, CONTAINER_WRITE), self.state
         if size == 0:
@@ -232,14 +175,12 @@ class TCompactProtocol(TProtocolBase):
             self.__writeUByte(CTYPES[ktype] << 4 | CTYPES[vtype])
         self.__containers.append(self.state)
         self.state = CONTAINER_WRITE
-
     def writeCollectionEnd(self):
         assert self.state == CONTAINER_WRITE, self.state
         self.state = self.__containers.pop()
     writeMapEnd = writeCollectionEnd
     writeSetEnd = writeCollectionEnd
     writeListEnd = writeCollectionEnd
-
     def writeBool(self, bool):
         if self.state == BOOL_WRITE:
             if bool:
@@ -254,27 +195,21 @@ class TCompactProtocol(TProtocolBase):
                 self.__writeByte(CompactType.FALSE)
         else:
             raise AssertionError("Invalid state in compact protocol")
-
     writeByte = writer(__writeByte)
     writeI16 = writer(__writeI16)
-
     @writer
     def writeI32(self, i32):
         self.__writeVarint(makeZigZag(i32, 32))
-
     @writer
     def writeI64(self, i64):
         self.__writeVarint(makeZigZag(i64, 64))
-
     @writer
     def writeDouble(self, dub):
         self.trans.write(pack('<d', dub))
-
     def __writeBinary(self, s):
         self.__writeSize(len(s))
         self.trans.write(s)
     writeBinary = writer(__writeBinary)
-
     def readFieldBegin(self):
         assert self.state == FIELD_READ, self.state
         type = self.__readUByte()
@@ -296,31 +231,24 @@ class TCompactProtocol(TProtocolBase):
         else:
             self.state = VALUE_READ
         return (None, self.__getTType(type), fid)
-
     def readFieldEnd(self):
         assert self.state in (VALUE_READ, BOOL_READ), self.state
         self.state = FIELD_READ
-
     def __readUByte(self):
         result, = unpack('!B', self.trans.readAll(1))
         return result
-
     def __readByte(self):
         result, = unpack('!b', self.trans.readAll(1))
         return result
-
     def __readVarint(self):
         return readVarint(self.trans)
-
     def __readZigZag(self):
         return fromZigZag(self.__readVarint())
-
     def __readSize(self):
         result = self.__readVarint()
         if result < 0:
             raise TProtocolException("Length < 0")
         return result
-
     def readMessageBegin(self):
         assert self.state == CLEAR
         proto_id = self.__readUByte()
@@ -336,21 +264,17 @@ class TCompactProtocol(TProtocolBase):
         seqid = self.__readVarint()
         name = binary_to_str(self.__readBinary())
         return (name, type, seqid)
-
     def readMessageEnd(self):
         assert self.state == CLEAR
         assert len(self.__structs) == 0
-
     def readStructBegin(self):
         assert self.state in (CLEAR, CONTAINER_READ, VALUE_READ), self.state
         self.__structs.append((self.state, self.__last_fid))
         self.state = FIELD_READ
         self.__last_fid = 0
-
     def readStructEnd(self):
         assert self.state == FIELD_READ
         self.state, self.__last_fid = self.__structs.pop()
-
     def readCollectionBegin(self):
         assert self.state in (VALUE_READ, CONTAINER_READ), self.state
         size_type = self.__readUByte()
@@ -364,7 +288,6 @@ class TCompactProtocol(TProtocolBase):
         return type, size
     readSetBegin = readCollectionBegin
     readListBegin = readCollectionBegin
-
     def readMapBegin(self):
         assert self.state in (VALUE_READ, CONTAINER_READ), self.state
         size = self.__readSize()
@@ -377,14 +300,12 @@ class TCompactProtocol(TProtocolBase):
         self.__containers.append(self.state)
         self.state = CONTAINER_READ
         return (ktype, vtype, size)
-
     def readCollectionEnd(self):
         assert self.state == CONTAINER_READ, self.state
         self.state = self.__containers.pop()
     readSetEnd = readCollectionEnd
     readListEnd = readCollectionEnd
     readMapEnd = readCollectionEnd
-
     def readBool(self):
         if self.state == BOOL_READ:
             return self.__bool_value == CompactType.TRUE
@@ -393,58 +314,35 @@ class TCompactProtocol(TProtocolBase):
         else:
             raise AssertionError("Invalid state in compact protocol: %d" %
                                  self.state)
-
     readByte = reader(__readByte)
     __readI16 = __readZigZag
     readI16 = reader(__readZigZag)
     readI32 = reader(__readZigZag)
     readI64 = reader(__readZigZag)
-
     @reader
     def readDouble(self):
         buff = self.trans.readAll(8)
         val, = unpack('<d', buff)
         return val
-
     def __readBinary(self):
         size = self.__readSize()
         self._check_string_length(size)
         return self.trans.readAll(size)
     readBinary = reader(__readBinary)
-
     def __getTType(self, byte):
         return TTYPES[byte & 0x0f]
-
-
 class TCompactProtocolFactory(object):
     def __init__(self,
                  string_length_limit=None,
                  container_length_limit=None):
         self.string_length_limit = string_length_limit
         self.container_length_limit = container_length_limit
-
     def getProtocol(self, trans):
         return TCompactProtocol(trans,
                                 self.string_length_limit,
                                 self.container_length_limit)
-
-
 class TCompactProtocolAccelerated(TCompactProtocol):
-    """C-Accelerated version of TCompactProtocol.
-
-    This class does not override any of TCompactProtocol's methods,
-    but the generated code recognizes it directly and will call into
-    our C module to do the encoding, bypassing this object entirely.
-    We inherit from TCompactProtocol so that the normal TCompactProtocol
-    encoding can happen if the fastbinary module doesn't work for some
-    reason.
-    To disable this behavior, pass fallback=False constructor argument.
-
-    In order to take advantage of the C module, just use
-    TCompactProtocolAccelerated instead of TCompactProtocol.
-    """
     pass
-
     def __init__(self, *args, **kwargs):
         fallback = kwargs.pop('fallback', True)
         super(TCompactProtocolAccelerated, self).__init__(*args, **kwargs)
@@ -456,8 +354,6 @@ class TCompactProtocolAccelerated(TCompactProtocol):
         else:
             self._fast_decode = fastbinary.decode_compact
             self._fast_encode = fastbinary.encode_compact
-
-
 class TCompactProtocolAcceleratedFactory(object):
     def __init__(self,
                  string_length_limit=None,
@@ -466,10 +362,12 @@ class TCompactProtocolAcceleratedFactory(object):
         self.string_length_limit = string_length_limit
         self.container_length_limit = container_length_limit
         self._fallback = fallback
-
     def getProtocol(self, trans):
         return TCompactProtocolAccelerated(
             trans,
             string_length_limit=self.string_length_limit,
             container_length_limit=self.container_length_limit,
             fallback=self._fallback)
+#LICENCE :   http://www.apache.org/licenses/LICENSE-2.0
+#CREATOR BY : PRANKBOT
+#MOD BY ACIL
