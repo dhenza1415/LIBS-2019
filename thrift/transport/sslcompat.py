@@ -1,45 +1,17 @@
-#
-# licensed to the apache software foundation (asf) under one
-# or more contributor license agreements. see the notice file
-# distributed with this work for additional information
-# regarding copyright ownership. the asf licenses this file
-# to you under the apache license, version 2.0 (the
-# "license"); you may not use this file except in compliance
-# with the license. you may obtain a copy of the license at
-#
-#   http://www.apache.org/licenses/license-2.0
-#
-# unless required by applicable law or agreed to in writing,
-# software distributed under the license is distributed on an
-# "as is" basis, without warranties or conditions of any
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
-#
-
+#LICENCE :   http://www.apache.org/licenses/LICENSE-2.0
+#CREATOR BY : PRANKBOT
+#MOD BY ACIL
 import logging
 import sys
-
 from thrift.transport.TTransport import TTransportException
-
 logger = logging.getLogger(__name__)
-
-
 def legacy_validate_callback(cert, hostname):
-    """legacy method to validate the peer's SSL certificate, and to check
-    the commonName of the certificate to ensure it matches the hostname we
-    used to make this connection.  Does not support subjectAltName records
-    in certificates.
-
-    raises TTransportException if the certificate fails validation.
-    """
     if 'subject' not in cert:
         raise TTransportException(
             TTransportException.NOT_OPEN,
-            'No SSL certificate found from %s' % hostname)
+            'sert tidak ada di ssl dengan user name %s' % hostname)
     fields = cert['subject']
     for field in fields:
-        # ensure structure we get back is what we expect
         if not isinstance(field, tuple):
             continue
         cert_pair = field[0]
@@ -49,9 +21,7 @@ def legacy_validate_callback(cert, hostname):
         if cert_key != 'commonName':
             continue
         certhost = cert_value
-        # this check should be performed by some sort of Access Manager
         if certhost == hostname:
-            # success, cert commonName matches desired hostname
             return
         else:
             raise TTransportException(
@@ -62,8 +32,6 @@ def legacy_validate_callback(cert, hostname):
         TTransportException.UNKNOWN,
         'Could not validate SSL certificate from host "%s".  Cert=%s'
         % (hostname, cert))
-
-
 def _optional_dependencies():
     try:
         import ipaddress  # noqa
@@ -72,7 +40,6 @@ def _optional_dependencies():
     except ImportError:
         logger.warn('ipaddress module is unavailable')
         ipaddr = False
-
     if sys.hexversion < 0x030500F0:
         try:
             from backports.ssl_match_hostname import match_hostname, __version__ as ver
@@ -95,6 +62,5 @@ def _optional_dependencies():
         logger.warn('using legacy validation callback')
         match = legacy_validate_callback
     return ipaddr, match
-
-
 _match_has_ipaddress, _match_hostname = _optional_dependencies()
+# MOD BY ACIL
