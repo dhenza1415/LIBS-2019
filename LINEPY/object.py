@@ -196,6 +196,18 @@ class Object(object):
                 return r.raw
         else:
             raise Exception('Download object failure.')
+            
+    @loggedIn    
+    def nadyacantikimut(self, path, path2):
+        try:
+            files = {'file': open(path, 'rb')}
+            data = {'params':self.genOBSParams({'oid': self.profile.mid,'ver': '2.0','type':'video','cat': 'vp.mp4'})}
+            r_vp = self.server.postContent(self.server.LINE_OBS_DOMAIN + '/talk/vp/upload.nhn',data=data, files=files)
+            if r_vp.status_code != 201:
+                raise Exception('update profile video picture failure.')
+            self.updateProfilePicture(path2, 'vp')
+        except Exception as e:
+            print(str(e))
 
     @loggedIn
     def forwardObjectMsg(self, to, msgId, contentType='image'):
