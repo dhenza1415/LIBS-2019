@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from Dhenza7.akad.ttypes import Message, Location
+from akad.ttypes import Message, Location
 from random import randint
 import json, ntpath, requests
 
