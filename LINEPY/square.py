@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ..akad.ttypes import *
+from akad.ttypes import *
 from random import randint
 
 def loggedIn(func):
