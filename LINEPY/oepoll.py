@@ -12,48 +12,48 @@ class OEPoll(object):
 
     def __init__(self, client):
         if type(client) is not LINE:
-            raise Exception("You need to set LINE instance to initialize LinePoll")
+            raise Exception('You need to set LINE instance to initialize OEPoll')
         self.client = client
     
-    def fetchOperation(self, revision, count=1):
-         return self.client.poll.fetchOperations(revision, count)
-
-    def addOpInterruptWithDict(self, OpInterruptDict):
-        self.OpInterrupt.update(OpInterruptDict)
-
-    def addOpInterrupt(self, OperationType, DisposeFunc):
-        self.OpInterrupt[OperationType] = DisposeFunc
-        
-    def execute(self, op, thread):
+    def __fetchOperation(self, revision, count=1):
+        return self.client.poll.fetchOperations(revision, count)
+    
+    def __execute(self, op, threading):
         try:
-            if thread == True:
-                _td = threading.Thread(target=self.OpInterrupt[op.type], args=(op,))
+            if threading:
+                _td = threading.Thread(target=self.OpInterrupt[op.type](op))
                 _td.daemon = False
                 _td.start()
             else:
                 self.OpInterrupt[op.type](op)
         except Exception as e:
             self.client.log(e)
+
+    def addOpInterruptWithDict(self, OpInterruptDict):
+        self.OpInterrupt.update(OpInterruptDict)
+
+    def addOpInterrupt(self, OperationType, DisposeFunc):
+        self.OpInterrupt[OperationType] = DisposeFunc
     
     def setRevision(self, revision):
         self.client.revision = max(revision, self.client.revision)
 
-    def singleTrace(self, count=2):
+    def singleTrace(self, count=1):
         try:
-            operations = self.fetchOperation(self.client.revision, count=count)
+            operations = self.__fetchOperation(self.client.revision, count=count)
         except KeyboardInterrupt:
             exit()
         except:
             return
         
         if operations is None:
-            self.client.log('No operation available now.')
+            return []
         else:
             return operations
 
-    def trace(self, thread=False):
+    def trace(self, threading=False):
         try:
-            operations = self.fetchOperation(self.client.revision)
+            operations = self.__fetchOperation(self.client.revision)
         except KeyboardInterrupt:
             exit()
         except:
@@ -61,5 +61,17 @@ class OEPoll(object):
         
         for op in operations:
             if op.type in self.OpInterrupt.keys():
-                self.execute(op, thread)
+                self.__execute(op, threading)
             self.setRevision(op.revision)
+
+    def singleFetchSquareChat(self, squareChatMid, limit=1):
+        if squareChatMid not in self.__squareSubId:
+            self.__squareSubId[squareChatMid] = 0
+        if squareChatMid not in self.__squareSyncToken:
+            self.__squareSyncToken[squareChatMid] = ''
+        
+        sqcEvents = self.client.fetchSquareChatEvents(squareChatMid, subscriptionId=self.__squareSubId[squareChatMid], syncToken=self.__squareSyncToken[squareChatMid], limit=limit, direction=1)
+        self.__squareSubId[squareChatMid] = sqcEvents.subscription
+        self.__squareSyncToken[squareChatMid] = sqcEvents.syncToken
+
+        return sqcEvents.events
