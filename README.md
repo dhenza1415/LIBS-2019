@@ -1,3 +1,6 @@
+#UPDATE LIBS SKPY3 SPEED UP 0.00</b>,
+#SESUIKAN SC KALIAN THAKS FOR ALL TEAM BOTS</b>,
+
 # Instruksi
 (https://github.com/dhenza1415/SKPY3)</b>,
 # Cara install
@@ -11,7 +14,7 @@
 # Install melalui VPS ( VIRTUAL PRIVATE SERVER )
 
 sudo apt-get install git<br>
-git clone https://github.com/dhenza1415/SKPY3<br>
+git clone https://github.com/dhenza1415/LIBS-2019<br>
 sudo apt-get python3-pip<br>
 sude pip3 install rsa<br>
 sudo pip3 install requests<br>
@@ -28,8 +31,6 @@ sudo pip3 install googletrans<br>
 sudo pip3 install wikipedia<br>
 sudo pip3 install youtube_dl<br>
 sudo pip3 install ffmpy<br>
-cd SKPY3<br>
-python3 sk10pro.py<br><br>
 # Catatan
 1. Jika os selain ubuntu bisa kalian sesuaikan sendiri<br>
 2. Untuk instal termux tinggal ganti sudo jadi pip3 atu hapus bagian sudo <br>
